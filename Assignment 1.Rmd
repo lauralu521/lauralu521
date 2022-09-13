@@ -9,10 +9,8 @@ output: word_document
 
 
 # Print out descriptive statistics for a selection of quantitative and categorical variables
-getwd()
-setwd("C:/Users/Tongxiang Lu/Desktop")
-getwd()
-mydata <- read.csv("P2-Movie-Ratings.csv")
+mydata <- read.csv(file.choose())
+mydata
 
 summary(mydata)
 mean(mydata$Budget)
