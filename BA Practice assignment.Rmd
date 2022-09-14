@@ -44,10 +44,17 @@ if (x>0){
  y=-19.7
 }
 print(x)
-
 print(y)
 
-
+after changing the x to -1: 
+x=-1 
+if (x>0){ 
+  y=14 
+}else{ 
+  y=-19.7 
+} 
+print(x)
+print(y)
 
 
 
