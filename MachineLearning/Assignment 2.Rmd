@@ -1,0 +1,155 @@
+---
+title: "Assignment 2"
+author: "Tongxiang Lu"
+date: "2022-09-29"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(caret)
+```
+
+```{r}
+library(lattice)
+```
+
+```{r}
+library(class)
+```
+
+```{r}
+library(readr)
+universalbank <- read.csv("universalbank.csv")
+colnames(universalbank) <- c('ID', 'Age','Experience','Income','ZIP Code','Family','CCAvg','Education','Mortgage','Personal.Loan','Securities.Account','CD.Account','Online','CreditCard')
+summary(universalbank)
+```
+
+```{r}
+# Question 1: Use "Null" function to remove variables not included in the mode, then transform character attributes to factors.
+universalbank$ID <- NULL
+universalbank$`ZIP Code` <- NULL
+universalbank$`Personal.Loan`= as.factor(universalbank$`Personal.Loan`)
+summary(universalbank)
+```
+
+```{r}
+# Normalize the whole data before running the model. 
+Norm_model <- preProcess(universalbank, method = c("center", "scale"))
+universalbank_norm=predict(Norm_model,universalbank)
+summary(universalbank_norm)
+universalbank_norm$Personal.Loan = universalbank$Personal.Loan
+```
+
+```{r}
+# Partition the data
+train_index = createDataPartition(universalbank$Personal.Loan,p=0.6, list=FALSE)
+train.df=universalbank_norm[train_index,]
+Validation.df=universalbank_norm[-train_index,]
+# Create the test data
+To_Predict=data.frame(Age = 40, Experience = 10, Income = 84, Family = 2, CCAvg = 2,                        Education= 1,Mortgage = 0, Securities.Account = 0, 
+                      CD.Account = 0, Online = 1,CreditCard = 1)
+print(To_Predict)
+To_Predict_norm<-predict(Norm_model,To_Predict)
+print(To_Predict_norm)
+Prediction <-knn(train=train.df[,1:7,9:12],
+                 test=To_Predict_norm[,1:7,9:12],
+                 cl=train.df$Personal.Loan,
+                 k=1)
+print(Prediction)
+```
+
+```{r}
+#Question 2   k=1 got highest accuracy of 0.953.
+fitControl <- trainControl(method = "repeatedcv",
+                           number = 3,
+                           repeats = 2)
+searchGrid = expand.grid(k = 1:10)
+Knn.model = train(Personal.Loan~.,
+                data = train.df,
+                method = 'knn',
+                tuneGrid = searchGrid,
+                trControl = fitControl,)
+Knn.model
+```
+
+```{r}
+#Question3        Accuracy recoded as 0.958.
+predictions <- predict(Knn.model,Validation.df)
+confusionMatrix(predictions,Validation.df$Personal.Loan)
+```
+
+```{r}
+#Question 4
+To_Predict = data.frame(Age = 40,Experience = 10, Income = 84, Family = 2, CCAvg = 2,                           Education = 0, Mortgage = 0, Securities.Account = 0,                                  CD.Account = 0, Online = 1, CreditCard = 1)
+                 
+To_Predict_norm = predict(Norm_model,To_Predict)
+predict(Knn.model,To_Predict_norm)
+```
+
+```{r}
+#Question 5
+splitSample <- sample(1:3, size=nrow(universalbank_norm), prob=c(0.5,0.3,0.2), replace = TRUE)
+train_data <- universalbank_norm[splitSample==1,]
+valid_data <- universalbank_norm[splitSample==2,]
+test_data <- universalbank_norm[splitSample==3,]
+Predict = data.frame(Age = 40, Experience = 10, Income = 84, Family = 2, CCAvg = 2,                        Education= 1, Mortgage = 0, Securities.Account = 0, 
+                     CD.Account = 0, Online = 1, CreditCard = 1)
+print(Predict)
+Predict_norm<-predict(Norm_model,Predict)
+print(Predict_norm)
+```
+
+```{r}
+Prediction_newsplit <-knn(train=train.df[,1:7,9:12],
+                          test=To_Predict_norm[,1:7,9:12],
+                          cl=train.df$Personal.Loan,
+                          k=1)
+print(Prediction_newsplit)
+```
+
+```{r}
+fitControl2 <- trainControl(method = "repeatedcv",
+                            number = 3,
+                            repeats = 2)
+                            searchGrid=expand.grid(k = 1:10)
+Knn.model2 = train(Personal.Loan~.,
+                  data=train.df,
+                  method='knn',
+                  tuneGrid=searchGrid,
+                  trControl = fitControl2,)
+Knn.model2
+```
+
+```{r}
+predictions2 <- predict(Knn.model2,Validation.df)
+confusionMatrix(predictions2,Validation.df$Personal.Loan)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
