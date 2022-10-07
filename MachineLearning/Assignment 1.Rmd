@@ -1,0 +1,41 @@
+---
+title: "ML Assignment 1"
+author: "Tongxiang Lu"
+date: "2022-10-07"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Print out descriptive statistics for a selection of quantitative and categorical variables
+mydata <- read.csv("P2-Movie-Ratings.csv")
+mydata
+summary(mydata)
+mean(mydata$Budget)
+sd(mydata$Budget)
+```
+
+```{r}
+library(pastecs)
+stat.desc(mydata)
+```
+
+```{r}
+# Transform at least one variable
+log_Budget <- log10(mydata$Budget)
+log_Budget
+log_Budget <- log10(mydata$Audience.Ratings)
+log_Budget
+```
+
+```{r}
+# Plot at least one quantitative variable, and one scatterplot
+hist(mydata$Budget)
+```
+
+```{r}
+plot(mydata$Rotten.Tomatoes.Ratings, mydata$Audience.Ratings)
+```
