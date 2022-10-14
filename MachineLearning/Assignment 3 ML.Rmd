@@ -1,0 +1,102 @@
+---
+title: "Assignment 3"
+author: "Tongxiang Lu"
+date: "2022-10-14"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Install and load all packages.
+library(readr)
+library(caret)
+library(ISLR)
+library(class)
+```
+
+```{r}
+# Read mydata.
+mydata <- read.csv("UniversalBank.csv")
+View(mydata)
+```
+
+```{r}
+# We use as.factor command to convert Online, CreditCard and Personal.Loan 
+## variable into categorical types.
+DF= mydata
+DF$Online_category='Not-Active'
+DF$Online_category[DF$Online>0]= 'Active'
+DF$Online_category=as.factor(DF$Online_category)
+DF$CreditCard=as.factor(DF$CreditCard)
+DF$Personal.Loan=as.factor(DF$Personal.Loan)
+summary(DF)
+```
+# Question A  
+## We use the set seed command to set the random seed, and use 60% training and 
+## 40% validating Data for Partition.
+```{r}
+set.seed(1)
+Train_Index = createDataPartition(DF$Personal.Loan, p=0.6, list=FALSE)
+Train.df=DF[Train_Index,]
+Validation.df=DF[-Train_Index,]
+```
+# We use pivot table online as column variable, creditcard as a row variable, and personal.loan as a secondary row variable. The values inside the table convey the count.
+```{r}
+mytable <- xtabs(~ CreditCard+Personal.Loan+Online_category, data=Train.df)
+ftable(mytable)
+```
+```{r}
+# Question B  
+## The probability that this customer will accept the loan offer is 0.09369369.
+prob <- (52/(503+52))
+prob
+```
+# Question C  
+## The pivot table for the training data: rows(Creditcard) and columns(Personal.Loan) and rows (Online_category)and columns(Personal.Loan).
+```{r}
+table(Creditcard =Train.df$CreditCard, Personal.Loan =Train.df$Personal.Loan)
+table(Online_category =Train.df$Online_category, Personal.Loan =Train.df$Personal.Loan)
+```
+
+```{r}
+# Question D
+##i. P(CC = 1 | Loan = 1) is 0.316.
+Prob1 <- 91/(91+197) 
+Prob1
+##ii. P(Online = 1 | Loan = 1) is 0.597.
+Prob2 <- 172/(172+116)
+Prob2
+##iii. P(Loan = 1) is 0.096.
+Prob3 <- (197+91)/(197+91+1906+806)
+Prob3
+##iv. P(CC = 1|Loan = 0) is 0.297.
+Prob4 <- 806/(1906+806)
+Prob4
+##v. P(Online = 1 | Loan = 0) is 0.601.
+Prob5 <- 1629/(1629+1083)
+Prob5
+##vi. P(Loan = 0) is 0.904.
+Prob6 <- (1906+806)/(1906+806+197+91)
+Prob6
+```
+# Question E
+## P(L1|C1, O1) = P(L1)[P(C1|L1)P(O1|L1)]/P(L1)[P(C1|L1)P(O1|L1)
+                                          +P(Lo)[p(C1|Lo)P(O1|Lo)]
+              = 0.096[0.316*0.597]/0.096[0.316*0.597]+ 0.904[0.297*0.601]
+              = 0.018/(0.018+0.161)
+              = 0.101
+
+# Question F
+## The value we obtained from the pivot table B is 0.09369369, while the value we get from naive method is 0.101. I think the former one is more accurate.          
+
+```{r}
+# Question G
+library(e1071)
+nb.model<-naiveBayes (Personal.Loan~Online_category+CreditCard, data=Train.df) 
+To_Predict=data.frame(CreditCard ='1',Online_category ='1') 
+predict(nb.model,To_Predict,type='raw')
+```
+## We get the same output in the previous method which is 0.101,thus the same answer provided in the above question.
