@@ -1,0 +1,131 @@
+---
+title: "QMM Module 6 Assignment"
+author: "Tongxiang Lu"
+date: "2022-10-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**A transportation problem, its duality and economics interpretation.
+Heart Start produces automated external defibrillators (AEDs) in each of two different plants (A and B). The unit production costs and monthly production capacity of the two plants are indicated in the table below. The AEDs are sold through three wholesalers. The shipping cost from each plant to the warehouse of each wholesaler along with the monthly demand from each wholesaler are also indicated in the table. How many AEDs should be produced in each plant, and how should they be distributed to each of the three wholesaler warehouses so as to minimize the combined cost of production and shipping?**
+
+**1  Formulate LP problem and solve in R **
+```{r}
+tab <- matrix(c(22,14,30,100,
+                16,20,24,120,
+                80,60,70,"-"), ncol=4, byrow=TRUE)
+colnames(tab) <- c("Warehouse 1", "Warehouse 2", "Warehouse 3", "Supply")
+rownames(tab) <- c("Plant A", "Plant B", "Demand" )
+tab <- as.table(tab)
+tab
+```
+
+# The above transportation problem can be formulated in the LP format as below:
+$$ Min T C = 22X_{11}+ 14X_{12}+ 30X_{13}
+             +16X_{21}+20X_{21}+24X_{23}
+             + 80X_{31}+60X_{32}+70X_{33} $$
+# Subject to 
+
+Supply constraints
+$$ X_{11}+X_{12}+ X_{13} ≤ 100 $$
+
+$$  X_{21}+X_{22}+ X_{23} ≤ 120 $$
+
+Demand constraints
+$$ X_{11}+X_{12}+ X_{13} ≥ 80 $$
+
+$$  X_{21}+X_{22}+ X_{23} ≥ 60 $$
+
+$$  X_{31}+X_{32}+ X_{33} ≥ 70 $$
+
+
+# Non-negativity of the variables
+           # xij ≥ 0
+# where
+           #i = 1, 2
+# and
+           #j = 1, 2, 3, 4
+           
+```{r}
+library(lpSolve)
+# Set up cost matrix
+costs <- matrix(c(622, 614,630,
+                  641, 645,649), ncol = 3,byrow = TRUE)
+# Set customers and suppliers' names
+colnames(costs) <- c("Warehouse 1", "Warehouse 2", "Warehouse 3")
+rownames(costs) <- c("Plant A", "Plant B")
+costs
+```
+
+```{r}
+# Set up constraint signs and right-hand sides (supply side)
+row.signs <- rep("<=", 2)
+row.rhs <- c(100,120)
+#Demand (sinks) side constraints
+col.signs <- rep(">=", 3)
+col.rhs <- c(80,60,70)
+# Run
+lptrans <- lp.transport(costs, "min", row.signs, row.rhs, col.signs, col.rhs)
+#Values of all 5 variables
+lptrans$solution
+```
+
+```{r}
+# Value of the objective function
+lptrans$objval
+```
+
+# When the transportation problem is solved, I got the values of the variables as
+$$ X_{12} = 60 $$
+
+$$ X_{13} = 40 $$
+$$ X_{21} = 80 $$
+
+$$ X_{23} = 30 $$
+
+
+# The minimized value of the transportation cost is 132790.
+
+** 2. Formulate the dual of the above problem  **
+The primal is the minimization problem while its dual is the maximization.
+And the question is what to maximize? The shipping company wants to maximize the price differentiates between origin and destination, that is to say, they want to
+maximize the different benefits on how much they paid at the origin to get goods and how much they received by selling the goods at destination?
+To sum up, dual obj. function is 
+$$ Max. Value= (80P_1^d + 60P_2^d +70P_3^d)-(100P_1^0 + 120P_2^0)$$
+Subject to
+$$ P_1^d - P_1^0 ≥ 622 $$
+ $$  P_2^d - P_1^0 ≥ 614 $$
+ $$  P_3^d - P_1^0 ≥ 630 $$
+  $$ P_1^d - P_2^0 ≥ 641 $$
+  $$ P_2^d - P_2^0 ≥ 645 $$
+   $$ P_3^d - P_2^0 ≥ 649 $$
+
+** 3.Economic Interpretation of the dual **
+We can write the first dual constraint as 
+$$ P_1^d - P_1^0 ≥ 22 $$
+$$ P_1^d(Revenue) ≥ P_1^0(buying cost) +22(transportation cost) $$
+Based on those above formulas, we get MR(marginal revenue) ≥ MC(marginal cost).
+In economics, profit maximization rule is the equality of MR and MC. 
+In conclusion, transportation cost minimization of value addition maximization together reaches to the economic principle of profit max by equalizing the MC and MR. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
