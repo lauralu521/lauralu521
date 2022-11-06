@@ -1,0 +1,89 @@
+---
+title: "Module 9 assignment"
+author: "Tongxiang Lu"
+date: "2022-11-05"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(lpSolveAPI)
+```
+
+## Emax co.
+** We have two constraints(employment constraints and ernings next year) and 
+   7 variables(X1,X2,X3,Y1p,Y1m,Y2p,Y2m ).
+
+```{r}
+lprec <- make.lp(2,7)
+```
+
+## Setting objective functions.
+```{r}
+set.objfn(lprec, c(20,15,25, -6,-6,0,-3))
+```
+
+
+## Objective function is to maximize.
+```{r}
+lp.control(lprec, sense='max')
+lp.control(lprec, sense='max')
+set.row(lprec, 1, c(6,4,5,-1,1,0,0), indices=c(1,2,3,4,5,6,7))
+rhs <- c(50,75)
+set.rhs(lprec, rhs)
+set.constr.type(lprec, c("=",">="))
+set.bounds(lprec, lower=rep(0,7))
+lp.rownames <- c("Emp", "Nextyear")
+lp.colnames <- c("x1", "x2","x3","y1p","y1m","y2p","y2m")
+dimnames(lprec)<- list(lp.rownames,lp.colnames)
+lprec
+write.lp(lprec, filename="emax.lp", type="lp")
+solve(lprec)
+get.objective(lprec)
+get.variables(lprec)
+get.constraints(lprec)
+```
+
+## Set values for the rows
+```{r}
+set.row(lprec, 1, c(6,4,5,-1,1,0,0), indices=c(1,2,3,4,5,6,7))
+set.row(lprec, 2, c(8,7,5,0,0,-1,1), indices=c(1,2,3,4,5,6,7))
+```
+
+# Left hand constraints
+```{r}
+set.constr.type(lprec, c("=",">="))
+set.bounds(lprec, lower=rep(0,7))
+```
+
+# Right hand values.
+```{r}
+rhs <- c(50,75)
+set.rhs(lprec, rhs)
+```
+
+# Save this into a file.
+```{r}
+write.lp(lprec,filename="emax.lp", type="lp")
+```
+
+# Solving the model.
+```{r}
+solve(lprec)
+lprec
+```
+
+# We find the value of objective function, variables, constraints.
+```{r}
+get.objective(lprec)
+get.variables(lprec)
+get.constraints(lprec)
+```
+
+
+
+
+
