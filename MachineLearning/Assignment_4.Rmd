@@ -1,0 +1,142 @@
+---
+title: "Assignment_4"
+author: "Tongxiang Lu"
+date: "2022-11-06"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+#a.
+# Read mydata.
+```{r}
+mydata <- read.csv("Pharmaceuticals.csv")
+mydata
+```
+
+# a. Set 3 to 11 as numerical variables (1 to 9) and normalize data.
+```{r}
+library(tidyverse)
+mydata1 <- scale(mydata[, 3:11])
+mydata1
+```
+
+# Trying to find the optimal k.
+```{r}
+library(factoextra)
+wss <- fviz_nbclust(mydata1,kmeans,method="wss",k.max=20)
+wss
+```
+# I find the optimal K=2 by using the wss method.
+
+```{r}
+silhouete <- fviz_nbclust(mydata1,kmeans,method="silhouette",k.max=20)
+silhouete
+```
+# I find the optimal K=5 with the silhouete method.
+
+
+# Running the kmeans k=2.
+```{r}
+cluster.kmean <- kmeans(mydata1,centers=2,nstart=2)
+cluster.kmean
+```
+
+# Data Transformation
+```{r}
+mydata2 <- cbind(mydata,cluster.kmean$cluster)
+colnames(mydata2) <- c("Symbol","Name","Market_Cap","Beta","PE_Ratio","ROE", 
+                       "ROA", "Asset_Turnover","Leverage", "Rev_Growth",          
+                       "Net_Profit_Margin", "Median_Recommendation","Location",
+                       "Exchange", "Groups")
+mydata2$Groups <- as.factor(mydata2$Groups)
+```
+
+# Getting a condensed value for each of the attribute in each cluster.
+```{r}
+fit <- kmeans(mydata1, 2)
+aggregate(mydata1,by=list(fit$cluster),FUN=mean)
+Cluster_Number<- data.frame(mydata1, fit$cluster)
+Cluster_Number
+```
+
+# I only find two clusters 1 & 2. 
+ 
+ 
+# Running the kmeans k=5.
+```{r}
+cluster.kmean <- kmeans(mydata1,centers=5,nstart=2)
+cluster.kmean
+```
+
+# Data Transformation
+```{r}
+mydata2 <- cbind(mydata,cluster.kmean$cluster)
+colnames(mydata2) <- c("Symbol","Name","Market_Cap","Beta","PE_Ratio","ROE", 
+                       "ROA", "Asset_Turnover","Leverage", "Rev_Growth",          
+                       "Net_Profit_Margin", "Median_Recommendation","Location",
+                       "Exchange", "Groups")
+mydata2$Groups <- as.factor(mydata2$Groups)
+```
+
+# Getting a condensed value for each of the attribute in each cluster.
+```{r}
+fit <- kmeans(mydata1, 5)
+aggregate(mydata1,by=list(fit$cluster),FUN=mean)
+Cluster_Number<- data.frame(mydata1, fit$cluster)
+Cluster_Number
+```
+
+
+# b. 
+Cluster 1             2, 3, 5, 18, 20
+It has the highest Market capitalization, ROE, ROA, Asset Turnover and
+lowest leverage.
+Cluster 2             1, 4, 7, 10, 16, 19
+It has the least Beta(risk), high ROE, high ROA, good revenue growth and 
+high Net Profit Margin.
+Cluster 3             6, 8, 9, 12, 14
+It  has a low market cap, high Beta(risk), lowest asset turnover, good profit 
+and highest revenue growth.
+Cluster 4             11, 13, 15, 17
+It has the highest Beta, low market cap, low ROE, low ROA, least revenue growth and least net profit margin.
+Cluster 5             21
+It has the highest market cap with high Asset turnover, low Beta(risk) and 
+a greater profit margin.
+
+
+# c.
+Cluster 1- It indicates "advised best-buy" pattern, based on its highest Market capitalization, ROE, ROA, Asset Turnover, and lowest leverage.
+Cluster 2- It indicates "hold or buy" pattern, due to highest Price earning ratio, strong asset turnover ratio with lowest or negative beta.
+Cluster 3- It shows "hold" recommendation because of strong Assets turnover 
+ratio, and the company could use their assets efficiently to generate the 
+revenue with highest net profit margin and lowest leverage.
+Cluster 4 It has no pattern.
+Cluster 5 It has no pattern.
+
+
+# d. 
+Cluster 1 can be named as ' Advised best-buy investment', because it has an 
+average asset turnover and average revenue growth. With highest PE Ratio among
+all the clusters.  
+Cluster2 can be named as 'Advised stable investment' as it has the least 
+Beta(risk), high ROE, high ROA, good revenue growth and high Net Profit Margin.
+Cluster 3 can be named as 'Advised less investment'，as it has a low market cap, high Beta(risk), lowest asset turnover, good profit and highest revenue growth.
+Cluster 4 can be named as 'Advised least investment', for it has the highest 
+Beta, low market cap, low ROE, low ROA, least revenue growth and least net 
+profit margin.
+Cluster 5 can be named as 'Advised safest investment'，as it has the highest 
+market cap with high Asset turnover, low Beta(risk) and a profit margin greater than all other clusters. 
+
+
+
+
+
+
+
+
+
+
