@@ -1,0 +1,104 @@
+---
+title: "Regression assignment"
+author: "Tongxiang Lu"
+date: "2022-11-10"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Question 1
+```{r}
+set.seed(2017)
+X=runif(100)*10
+Y=X*4+3.45
+Y=rnorm(100)*0.29*Y+Y
+plot(X,Y)
+```
+ 
+## Question 1a     
+Based on the plot, I think it fits a linear model because the graph shows 
+positive relationship between X and Y, when Y increases, X increases.
+
+
+```{r}
+Model =lm(Y~X)
+Model
+summary(Model)
+```
+## Question 1b
+The regression equation is Y=4.465 + 3.611*X. 
+From summary, I get R2 0.65 which means the model explains 65% variability of Y variable, however, we still miss 35% variability, thus X is just a not-bad 
+predictor of Y.
+
+
+```{r}
+cor(X,Y)^2
+```
+## Question 1c
+From summary, I get R2 65%, and I get correlation coefficient of X and Y is 65%, therefore, they are greatly related to each other.
+
+# Question 2
+```{r}
+head(mtcars)
+lm(formula = mtcars$hp ~ mtcars$wt, data = mtcars)
+lm(formula = mtcars$hp ~ mtcars$mpg, data = mtcars)
+```
+## Question 2a
+Based on the above data, I think James is right for his correlation coefficient 
+(hp and weight)is 46.160, which is much bigger than Chris's correlation 
+coefficient(hp and mlp) which is -8.83. Thus, weight is more related to HP than 
+mlp.
+
+```{r}
+Model=lm(mtcars$hp ~ mtcars$cyl + mtcars$mpg, data = mtcars)
+Model
+HP=54.067+ 23.979*4 - 2.775*22
+HP
+```
+## Question 2b
+The estimated Horse Power of a car with 4 calendar and mpg of 22 is 88.933.
+
+# Question 3
+```{r}
+library(mlbench)
+data(BostonHousing)
+Model=lm(BostonHousing$medv~BostonHousing$crim + (BostonHousing$zn > 25) +  
+         BostonHousing$ptratio+BostonHousing$chas)
+summary(Model)
+```
+## Question 3a
+From summary, I get R2 34%, while we miss 66% data, my conclusion is that this 
+is not an accurate model.
+   
+
+## Set Model1 as houses bounds the Chas River, Model 2 as houses bounds no river.
+```{r}
+Model1=lm(BostonHousing$medv~BostonHousing$crim + (BostonHousing$zn > 25) +  
+         BostonHousing$ptratio+BostonHousing$chas)
+Model1
+Model2=lm(BostonHousing$medv~BostonHousing$crim + (BostonHousing$zn > 25) +  
+         BostonHousing$ptratio)
+Model2
+```
+## Question 3b
+From the data shown, the house bounds the river is more expensive than the house
+bounds no river, by US$4292.1 per square. 
+
+## Question 3c
+## I get smallest p-value < 2.2e-16 with BostonHousing$ptratio variable, that is,  pupil-teacher ratio by town has a biggest influence to Boston housring compared 
+with the other three variables such as crime(per capita crime rate by town),
+chas(Charles River) and zn(proportion of residential land zoned for lots 
+over 25,000 sq.ft).
+
+
+## Question 3d
+```{r}
+anova(Model)
+```
+## From anova analysis, we learn the sum sq of crim, zn, ptratio are all big 
+values whereas the chas is small value, in other words, crim has the first 
+important influence to Bostonhousing price, ptratio the second, zn the 
+third, whereas chas has the least influence to Bostonhousing price. 
