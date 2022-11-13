@@ -1,0 +1,103 @@
+---
+title: "R Notebook"
+output: pdf_document
+---
+
+
+## Read the Data First and then set as working directory.
+```{r}
+library(readr)
+df <- read.csv("Online_Retail.csv")
+```
+
+# Question 1
+** Show the breakdown of the number of transactions by countries i.e., how many transactions are in the dataset for each country (consider all records including cancelled transactions). Show this in total number and also in percentage. Show only countries accounting for more than 1% of the total transactions. **
+```{r}
+library(dplyr)
+df %>% group_by(Country) %>% summarise(TransCount=n(), Percetage_Trans=n()*100/nrow(df)) %>% 
+filter(Percetage_Trans>1)%>% as.data.frame()
+```
+
+# Question 2
+** Create a new variable ‘TransactionValue’ that is the product of the exising ‘Quantity’ and ‘UnitPrice’ variables. Add this variable to the dataframe.**
+```{r}
+df <- mutate(df,Transactionvalue = Quantity*UnitPrice)
+```
+
+# Question 3   
+** Using the newly created variable, TransactionValue, show the breakdown of transaction values by countries i.e. how much money in total has been spent each country. Show this in total sum of transaction values. Show only countries with total transaction exceeding 130,000 British Pound. ** 
+```{r}
+summary(df$Transactionvalue)
+df %>% group_by(Country) %>% summarise(sum_Trans=sum(Transactionvalue)) %>% filter(sum_Trans>130000) 
+```
+
+# Question 5
+** Plot the histogram of transaction values from Germany. **
+```{r}
+Filtered_data = subset(df$Transactionvalue, df$Country == "Germany")
+hist(Filtered_data, xlim = c (-600, 1200), breaks = 120,
+main="Transactionvalue of Germany",xlab="Transaction Values of Germany",
+     ylab = "Germany", col="blue", pch=16)
+```
+
+# Question 6    
+** Which customer had the highest number of transactions? Which customer is most valuable? **
+```{r}
+Temp_1=group_by(df, CustomerID)
+Temp_2=summarise(Temp_1, count=n())
+Temp_3=arrange(Temp_2,desc(count))
+head(as.data.frame(Temp_3))
+
+Temp_1=group_by(df, CustomerID)
+Temp_2=summarise(Temp_1, Sum_value=sum(Transactionvalue))
+Temp_3=arrange(Temp_2,desc(Sum_value))
+head(as.data.frame(Temp_3))
+```
+
+# Question 7
+** Calculate the percentage of missing values for each variable in the dataset.**
+```{r}
+missing_values <- colMeans(is.na(df)*100)
+missing_values
+```
+
+# Question 8
+** What are the number of transactions with missing CustomerID records by countries?**
+```{r}
+df %>% group_by(Country) %>% filter(is.na(CustomerID))
+summary(df$Country)
+```
+
+# Question 10 
+** In the retail sector, it is very important to understand the return rate of 
+the goods purchased by customers. In this example, we can define this quantity, simply, as the ratio of the number of transactions cancelled (regardless of the transaction value) over the total number of transactions. With this definition, what is the return rate for the French customers?  Consider the cancelled transactions as those where the ‘Quantity’ variable has a negative value. **
+```{r}
+French_orders <- filter(df,Country=="France")
+French_cancelled_orders <- filter(French_orders, Quantity < 0)
+nrow(French_cancelled_orders)*100/nrow(French_orders)
+```
+# Question 11   
+** What is the product that has generated the highest revenue for the retailer? 
+**
+```{r}
+Temp_1= group_by(df, StockCode)
+Temp_2=summarise(Temp_1, Sum_Trans=sum(Transactionvalue))
+Temp_3=arrange(Temp_2, desc(Sum_Trans))
+head(as.data.frame(Temp_3))
+```
+
+# Question 12
+** How many unique customers are represented in the dataset? You can use unique() and length()functions. **
+```{r}
+unique_customers <- unique(df$CustomerID)
+length(unique_customers)
+```
+
+
+
+
+
+
+
+
+
