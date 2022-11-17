@@ -1,0 +1,95 @@
+---
+title: "tlu4_#11"
+author: "Tongxiang Lu"
+date: "2022-11-17"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# AP Service
+AP is a shipping service that guarantees overnight delivery of packages in the continental US.The company has various hubs at major cities and airports across 
+the country. Packages are received at hubs, and then shipped to intermediate 
+hubs or to their final destination. 
+
+The manager of the AP hub in Cleveland is concerned about labor costs, and is interested in determining the most effective way to schedule workers. The hub 
+operates seven days a week, and the number of packages it handles varies from 
+one day to another. The table below provides an estimate of the number of 
+workers needed each day of the week. 
+
+![AP service1](C:/Users/Tongxiang Lu/Desktop/QUANTITATIVE MANAGEMENT MODELING/Assignment/Module 11 assignment Nov. 20th/AP service1.png)
+
+Package handlers at AP are guaranteed a five-day work week with two consecutive 
+days off. The base wage for the handlers is $750 per week. Workers working on 
+Saturday or Sunday receive an additional $25 per day. The possible shifts and 
+salaries for package handlers are:   
+
+![AP service2](C:/Users/Tongxiang Lu/Desktop/QUANTITATIVE MANAGEMENT MODELING/Assignment/Module 11 assignment Nov. 20th/AP service2.png)
+
+# Set x1 as the first day start work(Sunday with five consecutive days), x2 the second day(Monday with five consecutive days), x3 as the third day start work(Tuesday with five consecutive days), x4 the fourth day start work(Wednesday with five consecutive days), x5 as the fifth day start work(Thursday with five consecutive days), x6 the sixth day start work(Friday with five consecutive days), x7 as the seventh day start work(Saturday with five consecutive days).
+
+# Objective function
+min: 775 X1 + 750 X2 + 775  X3 + 800 X4 + 800 X5 + 800 X6 + 800 X7
+
+# Subject to
+X1 + X4 + X5 + X6 + X7 >= 18;
+X1 + X2 + X5 + X6 + X7 >= 27;
+X1 + X2 + X3 + X6 + X7 >= 22;
+X1 + X2 + X3 + X4 + X7 >= 26;
+X1 + X2 + X3 + X4 + X5 >= 25;
+X2 + X3 + X4 + X5 + X6 >= 21;
+X3 + X4 + X5 + X6 + X7 >= 19;
+
+x1 >= 0；
+x2 >= 0；
+x3 >= 0；
+x4 >= 0；
+x5 >= 0；
+x6 >= 0；
+x7 >= 0；
+
+and xj is integer, for j=1,2,3,4,5,6,7.
+
+```{r}
+library(lpSolve)
+f.obj <- c(775,750,775,800,800,800,800)
+f.con <- matrix(c(1,0,0,1,1,1,1,
+                  1,1,0,0,1,1,1,
+                  1,1,1,0,0,1,1,
+                  1,1,1,1,0,0,1,
+                  1,1,1,1,1,0,0,
+                  0,1,1,1,1,1,0,
+                  0,0,1,1,1,1,1), nrow=7,byrow=TRUE)
+f.dir <- c('>=',  '>=',  '>=', '>=',  '>=',  '>=', '>=')
+f.rhs <- c(18,27,22,26,25,21,19)
+lp('min', f.obj, f.con,f.dir,f.rhs,all.int=TRUE)
+```
+# The total cost is $25675.
+
+
+# Then solve the 7 decision variables(x1, x2, x3, x4, x5, x6, x7).
+```{r}
+lp7<-lp('min', f.obj, f.con,f.dir,f.rhs,all.int=TRUE)
+lp7$solution
+```
+# I get 18 available workers on Sunday;
+(available workers on Sunday: X1 + X4 + X5 + X6 + X7 = 1 + 2 + 7 + 0 + 8 = 18)
+# I get 29 available workers on Monday;
+(available workers on Monday: X1 + X2 + X5 + X6 + X7 = 1 + 13 + 7 + 0 + 8 = 29)
+# I get  24 available workers on Tuesday;
+(available workers on Tuesday: X1 + X2 + X3 + X6 + X7 = 1 + 13 + 2 + 0 + 8 = 24)
+# I get 26 available workers on Wendesday;
+(available workers on Wednesday: X1 + X2 + X3 + X4 + X7 = 1 + 13 + 2 + 2 + 8 = 26)
+# I get  25 available workers on Thursday;
+(available workers on Thursday: X1 + X2 + X3 + X4 + X5 = 1 + 13 + 2 + 2 + 7 = 25)
+# I get  24 available workers on Friday;
+(available workers on Friday: X2 + X3 + X4 + X5 + X6 = 13 + 2 + 2 + 7 + 0 = 24)
+# I get  19 available workers on Saturday;
+(available workers on Saturday: X3 + X4 + X5 + X6 + X7 = 2 + 2 + 7 + 0 +8 = 19)
+
+# To sum up, I get 18 available workers on Sunday, 29 available workers on Monday,
+# 24 available workers on Tuesday, 26 available workers on Wendesday, 25 available workers on Thursday, 24 available workers on Friday, and 19 available workers on Saturday.
+
+
