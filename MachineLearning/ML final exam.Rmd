@@ -1,0 +1,131 @@
+---
+title: "ML Final Exam"
+author: "Tongxiang Lu"
+date: "2022-12-12"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Load the data.
+```{r}
+fuel_costs.df <- read.csv("fuel_receipts_costs_eia923.csv")
+```
+
+# Set random four digit seed and split data.
+```{r}
+library(caret)
+set.seed(3272)
+fuel_costs.df1<-createDataPartition(fuel_costs.df$fuel_type_code_pudl,p=0.02,list=F)
+Sampled_Data = fuel_costs.df[fuel_costs.df1,]
+
+Train_Index=createDataPartition(Sampled_Data$fuel_type_code_pudl, p=0.75, list=F)
+Train_Data=Sampled_Data[Train_Index,]
+Validation_Data=Sampled_Data[-Train_Index,]
+```
+
+# Remove the missing value.
+```{r}
+library(dplyr)
+sapply(Train_Data,function(x) sum(is.na(x)))
+head(Train_Data)
+```
+# Set only numerical variable for my train data analysis.
+```{r}
+fuel_costs.df1 <- Train_Data[c(2,15,16,17,18,20)]
+head(fuel_costs.df1)
+summary(fuel_costs.df1)
+```
+# Drop column 6 as it has significant number of missing data.
+```{r}
+fuel_costs.df2 <- fuel_costs.df1[,-6]
+summary(fuel_costs.df2)
+```
+# Set only numerical variable for my test data analysis.
+```{r}
+fuel_costs.df1_valid <- Validation_Data[c(2,15,16,17,18,20)]
+summary(fuel_costs.df1_valid)
+```
+# Drop column 6 as it has significant number of missing data.
+```{r}
+fuel_costs.df2_valid <- fuel_costs.df1_valid[,-6]
+summary(fuel_costs.df2_valid)
+```
+# Normalize data.
+```{r}
+library(tidyverse)
+fuel_costs.df3 <- scale(fuel_costs.df2[,1:5])
+head(fuel_costs.df3)
+fuel_costs.df3_valid<-scale(fuel_costs.df2_valid[,1:5])
+head(fuel_costs.df3_valid)
+```
+# Trying to find the optimal k
+```{r}
+library(factoextra)
+wss <- fviz_nbclust(fuel_costs.df3,kmeans,method="wss")
+wss
+# It is very ambiguous to find the optimal K.
+```
+
+```{r}
+silhouete <- fviz_nbclust(fuel_costs.df3,kmeans,method="silhouette")
+silhouete
+# I find my optimal K=7 by silhouete method.
+```
+# By WSS and silhouette method comparasion, I find silouette method more precise, 
+so I choose running kmeans k=7.
+```{r}
+cluster.kmean <- kmeans(fuel_costs.df3,centers=7,nstart=25)
+cluster.k1<-kmeans(fuel_costs.df3,centers = 7, nstart = 25)
+fviz_cluster(cluster.k1, data = fuel_costs.df3)
+cluster.k1$size
+cluster.k1$centers
+```
+
+# Interpretation
+Cluster 1
+This cluster receives a very high volume of fuel（big positive numbers) with 
+low ash and sulfur(negative numbers), which means this cluster accumulated pure 
+fuel. Thus, I conclude this cluster with surplus inflow of pure fuel. Additionally, 
+the positive number of plant indicates that the plant with larger identification 
+number is relevant to the large volume of fuel.
+
+Cluster 2
+This cluster is identified as everything low with low quantity of fuel received, 
+low heat content of the fuel, low sulfur content percentage and low ash content 
+as well. Both the negative and positive things are low here.
+
+Cluster 3
+This cluster is basically characterized with the highest ash content in the fuel, 
+in which the most impure energy is located with high heat content of the fuel, 
+high sulfur content and high ash content percentage. So, I recommend US power 
+generation to bring proper policy to curb the impurity in the fuel.
+
+Cluster 4
+This is the highest fuel received cluster with low ash content. Such a large 
+volume of relatively purer fuel! Contrary to cluster 3, US power generation can 
+use the incentive policy to further encourage collecting good fuel with less ash content.
+
+Cluster 5
+Cluster 5 has higher heat value of the fuel together with moderately high 
+sulfur content and ash content. My conclusion is cluster 5 has more fuel 
+with more efficiency and releases more energy.
+
+Cluster 6
+This is the cluster with everything low. The difference between cluster 2 and 
+cluster 6 is that this cluster has the plant with smaller identification numbers 
+than cluster 2.  Contrary to cluster 1, this cluster shows that the plants 
+with lower identification number are associated with low volume of fuel.
+
+Cluster 7
+Cluster 7 can be named as a larger volume of fuel than average with very 
+high sulfur content in it. From the perspective of emission control and the 
+longevity of automobiles, this is the cluster the US power generation must keep 
+an eye on and formulate policy to reduce the sulfur content. 
+
+
+
+
+
