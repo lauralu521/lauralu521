@@ -1,0 +1,201 @@
+---
+title: 'Group 7 QMM Final Project'
+author: "Ankith, Blaji, Tongxiang"
+date: "2022-12-13"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# I. Project Problem Statement
+For this group work, we are requested to define the maximum chance of success for 
+each group (12 students, 4 groups) on a class project.
+
+# II. Overview of Data
+We choose 4 attributes(GENDER, GPA, EFFORTS AND ATTENDANCE) which might affect 
+the group performance.Our key attributes for the project success are listed below:
+Gender
+We randomly choose 7 female students and 5 male students. As this is category 
+variable, we use dummy variable(1=male, 0=female) 
+GPA
+As GPA Scale ranges from 1 to 4, each student is assigned with particular GPA.
+Attendance
+We consider attendance as our important factor, because the higher the participation, the more involvement the students will be with the project to meet the project objectives and goals. We have assigned the attendance percentages for every student. This factor has given us clarity on determining the project success.
+Efforts
+The number of hours spent weekly in rectifying the issues in the assigned tasks. 
+This will also have an impact but it depends on the number of issues which is 
+raised.
+
+# III. Mathematical Optimization Model
+We choose Integer linear programming as helps us maximize the objective function
+to find the optimal solution.
+
+
+## Load our data.
+```{r}
+ProjSuccess <- data.frame(ID = c(1:12), 
+          GPA = c(3.6, 3.4, 3.3, 3.6, 3.9, 2.9, 3.65, 3.8, 3.4, 3.8, 3.6, 3.0),
+          Gender =  c(1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0),
+          Attendance = c(90, 80, 60, 75, 90, 80, 60, 75, 90, 80, 60, 75), 
+          Efforts = c(7, 9, 12, 8, 14, 11, 8, 15, 10, 13, 7, 9))
+ProjSuccess
+```
+
+## Formulate the Problem.
+Let:
+
+$x_{ij}$ = 1 if person $j$ belong to group $i$, and 0 if not.  
+
++ $j$ refers to person = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 
+
++ $i$ means group = 1, 2, 3, 4 
+
+Objective function: 
+
+\begin{equation*}
+  \begin{split}
+    Max \: Z &= 90\sum_{i=1}^{4}x_{i1} + 80\sum_{i=1}^{4}x_{i2} + 
+                60\sum_{i=1}^{4}x_{i3} +  75\sum_{i=1}^{4}x_{i4} +                 
+                89\sum_{i=1}^{4}x_{i5} + 56\sum_{i=1}^{4}x_{i6} \\&+
+                 78\sum_{i=1}^{4}x_{i7} + 97\sum_{i=1}^{4}x_{i8} +           
+                91\sum_{i=1}^{4}x_{i9} + 86\sum_{i=1}^{4}x_{i10} +  
+                82\sum_{i=1}^{4}x_{i11} +74\sum_{i=1}^{4}x_{i12}
+\end{split}
+\end{equation*}
+S.T: 
+
+Groups
+$$ \sum_{j=1}^{12}x_{ij} = 3, where \: i = 1, 2, 3, 4 \: 
+and  \: j = 1,2,3,4, 5, ... , 12$$
+GPA
+$$ \sum_{j=1}^{12}GPA_{j}x_{ij}  \geq 12 - i, where \: i = 1, 2, 3, 4 \: 
+and  \: j = 1,2,3,4, 5, ... , 12 $$
+Gender
+$$ \sum_{j=1}^{12} G_{j}x_{ij} \geq 1 ,  where \: G = gender, \: i = 1, 2, 3, 4 
+\: and  \: j = 1,2,3,4, 5, ... , 12 $$
+Efforts
+$$ \sum_{j=1}^{12}H_{j}x_{ij}  \geq 45-5i, where \: H = hours, \: i = 1, 2, 3, 4 
+\: and  \: j = 1,2,3,4, 5, ... , 12 $$
+Person must be part on one and only one group
+$$ \sum_{i=1}^{4}x_{ij}  = 1, where \: i = 1, 2, 3, 4 \: and  \: 
+j = 1,2,3,4, 5, ... , 12 $$
+
+
+Integer constrain
+$$x_{ij} \: is \: integer, \: for \: i = 1, 2, 3, 4 \: and  \: 
+j = 1,2,3,4, 5, ... , 12.$$
+
+
+## Use lpsovle to get our object function.
+```{r}
+library(lpSolveAPI)
+##  0 constraints, 48 decision variables.
+lpobject <- make.lp(0, 48)
+# Set the problem as an integer programming
+set.type(lpobject, 48, "integer")
+## We are defining an objective function. , 
+set.objfn(lpobject, rep(c(90, 80, 60, 75, 89, 56, 78, 97, 91, 86, 82, 74),4))
+lp.control(lpobject,sense='max')
+```
+## Add the 12 constraints based on the GPA, Gender and efforts.
+```{r}
+add.constraint(lpobject, c(rep(1,12),rep(0,36)), "=", 3)
+add.constraint(lpobject, c(rep(0,12),rep(1,12),rep(0,24)), "=", 3)
+add.constraint(lpobject, c(rep(0,24),rep(1,12),rep(0,12)), "=", 3)
+add.constraint(lpobject, c(rep(0,36),rep(1,12)), "=", 3)
+add.constraint(lpobject, rep(ProjSuccess$GPA,4), ">=", 10)
+add.constraint(lpobject, rep(ProjSuccess$GPA,4), ">=", 9)
+add.constraint(lpobject, rep(ProjSuccess$GPA,4), ">=", 8)
+add.constraint(lpobject, rep(ProjSuccess$GPA,4), ">=", 7)
+add.constraint(lpobject, rep(ProjSuccess$Gender,4), ">=", 1)
+add.constraint(lpobject, rep(ProjSuccess$Gender,4), ">=", 1)
+add.constraint(lpobject, rep(ProjSuccess$Gender,4), ">=", 1)
+add.constraint(lpobject, rep(ProjSuccess$Gender,4), ">=", 1)
+add.constraint(lpobject, rep(ProjSuccess$Efforts,4), ">=", 15)
+add.constraint(lpobject, rep(ProjSuccess$Efforts,4), ">=", 12)
+add.constraint(lpobject, rep(ProjSuccess$Efforts,4), ">=", 9)
+add.constraint(lpobject, rep(ProjSuccess$Efforts,4), ">=", 6)
+add.constraint(lpobject, rep(c(1,rep(0,11)),4), "=", 1)
+add.constraint(lpobject, rep(c(rep(0,1),1,rep(0,10)),4), "=", 1)
+add.constraint(lpobject, rep(c(rep(0,2),1,rep(0,9)),4), "=", 1)
+add.constraint(lpobject, rep(c(rep(0,3),1,rep(0,8)),4), "=", 1)
+add.constraint(lpobject, rep(c(rep(0,4),1,rep(0,7)),4), "=", 1)
+add.constraint(lpobject, rep(c(rep(0,5),1,rep(0,6)),4), "=", 1)
+add.constraint(lpobject, rep(c(rep(0,6),1,rep(0,5)),4), "=", 1)
+add.constraint(lpobject, rep(c(rep(0,7),1,rep(0,4)),4), "=", 1)
+add.constraint(lpobject, rep(c(rep(0,8),1,rep(0,3)),4), "=", 1)
+add.constraint(lpobject, rep(c(rep(0,9),1,rep(0,2)),4), "=", 1)
+add.constraint(lpobject, rep(c(rep(0,10),1,rep(0,1)),4), "=", 1)
+add.constraint(lpobject, rep(c(rep(0,11),1),4), "=", 1)
+```
+## To solve the model.
+```{r}
+solve(lpobject)
+get.objective(lpobject)
+```
+## We have got a value of 958 which is the total of the attendance attribute. 
+Here, we are maximizing the chance of success for all groups on a class project.
+
+## Get the constraints.
+```{r}
+get.constraints(lpobject)
+get.variables(lpobject)
+```
+# Get the constraints.
+```{r}
+get.constraints(lpobject)
+```
+# The positoning of '1' in the above determines that the  fifth, eighth and tenth psoitions belong to group 1. The rest are assigned in different groups. 
+```{r}
+get.variables(lpobject)
+```
+
+# Optimal mix of Groups.
+```{r}
+# Add the group it belongs to.
+Group <- data.frame(Group = c(4,3,2,4,1,2,3,1,2,1,3,4))
+# Combine both dataframes.
+ProjSuccess_1 <- cbind(ProjSuccess, Group = Group$Group)
+# Show final result.
+ProjSuccess_1
+```
+
+# Plot the data by groups to identify the best group.
+```{r}
+#Function to generate a continuous color palette
+mycolor <- colorRampPalette(c('red','turquoise'))
+#Add the color palette based on customer's balance
+mycolor2 <- mycolor(20)[as.numeric(cut(ProjSuccess_1$Group,breaks = 20))]
+plot(as.factor(ProjSuccess_1$Group), ProjSuccess_1$GPA, 
+     main="GPA's by Groups", 
+     xlab="Group", 
+     ylab="GPA", 
+     col = mycolor2,
+     cex.main=1.5,
+     cex.axis = 1.5,
+     pch = 15)
+plot(as.factor(ProjSuccess_1$Group), ProjSuccess_1$Efforts, 
+     main="Efforts(Hours)", 
+     xlab="Group", 
+     ylab="Hours Worked", 
+     col = mycolor2,
+     cex.main=1.5,
+     cex.axis = 1.5,
+     pch = 15)
+plot(as.factor(ProjSuccess_1$Group), ProjSuccess_1$Attendance, 
+     main="Attendance", 
+     xlab="Group", 
+     ylab="Attendance", 
+     col = mycolor2,
+     cex.main=1.5,
+     cex.axis = 1.5,
+     pch = 15)
+```
+
+# VI. Conclusions
+We find group 1 has the highest meeting hours while Group 3 has the least.
+We find group 1 performs well in attendance, efforts and and GPA.
+Thus, We conclude Group 1 performs best in terms of all the attributes.
+
